@@ -1,0 +1,181 @@
+
+% definition of types
+% ----------------
+  \type season :: [SPRING, SUMMER, AUTUMN, WINTER];
+  \type infinity :: [INFINITY];
+  \type intx :: int | infinity;
+  \type point :: (X: length, Y: length);
+  \type rat :: (N: int, D: int);
+% ----------------
+  \type season :: [SPRING, SUMMER, AUTUMN, WINTER];
+  \type intx :: Int<-int | Infinity;
+  \type point :: (X: length, Y: length);
+  \type rat :: (N: int, D: int);
+% ----------------
+
+% declaration of variables
+% ----------------
+  \var hoge: int;
+  \var piyo: int[32];
+% ----------------
+
+% declaration of functions
+% ----------------
+  \func add(u: point, v: point): point {\eval (u.X + v.X, u.Y + v.Y);}
+% ----------------
+
+% declaration of binary operators
+% ----------------
+  \binop +(u: point, v: point): point {\eval (u.X + v.X, u.Y + v.Y);}
+% ----------------
+
+\command \int_to_decimal num:int {
+	\var n: int;
+	\var q: int;
+	\var dec: int;
+	\let dec = 10;
+	\let n = num;
+	\while dec * 10 > num { \let dec *= 10; }
+  \while dec > 0 {
+    \let r = n / dec;
+    \let n -= dec * r;
+    \let dec /= 10;
+    \output{\charcode '0' + r;}
+  }
+}
+\command \frac #nmr; #dnm; {
+  /* ... */
+}
+
+% declaration of style
+% ----------------
+  \style @tt = [font-family: default, font-series: tt, font-color: blue];
+  \style @default_of_document = [
+    font-family: default,
+    font-series: rm,
+    font-color: black
+  ];
+% ----------------
+
+% sample 
+% ----------------
+  \var foo: int;
+  \let foo = 114514;
+  \document{
+    \paragraph{
+      The variable \span@tt{foo} has \int_to_decimal foo; as its value.
+    }
+  }
+% ----------------
+  \var foo: int = 114514;
+  \document{
+    \paragraph{
+      The variable \span@tt{foo} has \int_to_decimal(foo) as its value.
+    }
+  }
+% ----------------
+
+% sample
+% ----------------
+  \document[background-color: gray]{
+    \paragraph
+  }
+% ----------------
+
+/* Example:
+  "\int_to_decimal foo;" "\int_to_decimal(foo)" : valid
+  "\int_to_decimal foo" "\int_to_decimalfoo;" : invalid
+*/
+
+\command \repeat n: int #text; {
+	\for i: int, 0, n-1 { \output{#text;} }
+}
+
+/* Example:
+  "\repeat 3 {a}" "\repeat 3{a}" "\repeat (3) {a}" "\repeat (3){a}" "\repeat(3) {a}" "\repeat(3){a}" : valid
+  "\repeat3 {a}" "\repeat3{a}" "\repeat 3 a" "\repeat 3 a;" : invalid
+*/
+
+% sample of variant type
+% ---- ---- ---- ----
+  \type infinity :: [INFINITY];
+  \type intx :: int | infinity;
+  \binop +(a: intx, b: intx): intx {
+    \match a: int {
+      \match b: int {
+        \eval a + b;
+      }{
+        \eval INFINITY;
+      }
+    }{
+      \eval INFINITY;
+    }
+  }
+  
+  \var l: intx = 3;
+  \var m: intx = 5;
+  \var n: intx = INFINITY;
+
+  \eval l + m;% => 8
+  \eval m + n;% => INFINITY
+% ---- ---- ---- ----
+
+% sample
+% ---- ---- ---- ----
+\binop +(r: rat, s: rat): rat {\eval (r.N * s.D + s.N * r.D, r.D * s.D);}
+\command \displayrat r: rat {\int_to_toks r.N;/\int_to_toks r.D;}
+% ---- ---- ---- ----
+
+% sample of overloading functions
+% ---- ---- ---- ----
+  \func doubleMe(n: int): int {\eval n * 2;}
+  \func doubleMe(x: double): double {\eval x * 2;}
+  
+  \eval doubleMe(3);% => 6
+  \eval doubleMe(3.0);% => 6.0
+% ---- ---- ---- ----
+
+% sample of declaration of command
+% ---- ---- ---- ----
+  \command \paren #content; {
+    \var hgt: length;
+    \settoheight hgt {#content;}
+    \leftparen hgt;#content;\rightparen hgt;
+}
+% ---- ---- ---- ----
+  \command \paren #content; {
+    \var hgt: length;
+    \settoheight(hgt){#content;}
+    \leftparen(hgt)#content;\rightparen(hgt)
+}
+% ---- ---- ---- ----
+
+% algorithmic primitive controls: \type, \var, \func, \binop, \let, \eval, \command, \if, \match, \while.
+
+% ---- ---- ---- ----
+  
+% ---- ---- ---- ----
+  \command \int_to_decimal n: int {
+    \letin dec = n % 10 {
+      \letin m = (n - dec) / 10 {
+        \charcode('0' + dec)
+        \unless m == 0 {\int_to_decimal(m)}
+      }
+    }
+  }
+
+  \command \document {
+    \var x: int = 42;
+
+    \paragraph{
+      \int_to_decimal(x)% => '42'
+    }
+  }
+% ---- ---- ---- ----
+  \command \int_to_decimal n: int {
+    \(
+      let m = (n - n % 10) / 10 in (
+        unless m == 0 {\int_to_decimal(m)}
+      )
+    )
+  }

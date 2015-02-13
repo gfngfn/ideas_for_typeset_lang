@@ -1,0 +1,118 @@
+  \type infty :: [INFTY];
+  \type intx :: Int <- int | Infty <- infty;
+  \func \add a, b {
+    \match a, Int \then{\val INFTY;}\else{
+      \match b, Int \then{\val INFTY;}\else{\val a + b, Int;}
+    }
+  }
+% ---- ---- ---- ----
+  \macro \inverse t {
+    \cut head, tail {@t;}{
+      \ifempty{@tail;}\then{}\else{\inverse{@tail;}}
+      @head;
+    }
+  }
+  \macro \strong-inverse t {\inverse{\break-robust{@t;}}}
+  \robust \live {LIVE}
+  \document{
+    \paragraph{
+      \inverse{LIVE}, %=>EVIL
+      \inverse{\live;}, %=>LIVE
+      \inverse{LIVEA}, %=>AEVIL
+      \inverse{\live;A}.%=>ALIVE
+    }
+  }
+% ---- ---- ---- ----
+  \macro \repeat-same n t {
+    \if n == 0 \then{
+    }\else{
+      @t;\repeat-same n-1 {@t;}
+    }
+  }
+  \func fact n (
+    if n == 0 then 1 else n * fact(n-1)
+  )
+  %制御綴の引数で型がトークン列のものは波括弧でくくる
+  %制御綴の引数で型がトークン列を取り得ないものは，円括弧でくくらなくてよい
+  %制御綴の最後の引数が非トークン列でしかも円括弧でくくられていない場合，セミコロンをつける
+  %
+  %トークン列型か非トークン列型かで波括弧と円括弧をいちいち区別するのは面倒!!!!
+% ---- ---- ---- ----
+  \macro \repeat-same n t {
+    \if n == 0 \then{
+    }\else{
+      @t;\repeat-same(n-1){@t;}
+    }
+  }
+  \func \fact n {
+    \if n == 0 \then{\val 1;}\else{\val n * \fact(n-1);}
+  }
+  \func \count-tokens t {\count-tokens-sub(0){@t;}}
+  \func \count-tokens-sub n t {
+    \cut head, tail {@t;}{
+      \ifempty{@tail;}\then{
+        \val n;
+      }\else{
+        \val \count-tokens-sub(n+1){@tail;};
+      }
+    }
+  }
+  \func \strong-count-tokens t {\count-tokens-sub(0){\break-robust{@t;}}}
+  % \val ～; により値を返す仕様
+  %セミコロンが使えるのは一部のプリミティヴと引数のないマクロだけ
+  %函数引数にセミコロンは使用しない
+  %引数のない函数は \hoge() のように空の円括弧をつける
+% ---- ---- ---- ----
+% ---- ---- ---- ----
+  \macro \repeat-same n t {
+    \if n == 0 \then{
+    }\else{
+      @t;\repeat-same(n-1){@t;}
+    }
+  }
+  \func $fact n {
+    \if n == 0 \then{\val 1;}\else{\val n * $fact(n-1);}
+  }
+  \func $count-tokens t {$count-tokens-sub(0){@t;}}
+  \func $count-tokens-sub n t {
+    \cut head, tail {@t;}{
+      \ifempty{@tail;}\then{
+        \val n;
+      }\else{
+        \val $count-tokens-sub(n+1){@tail;};
+      }
+    }
+  }
+  \func $strong-count-tokens t {$count-tokens-sub(0){\break-robust{@t;}}}
+  %函数の先頭文字を $ に替えてしまうべきか??
+% ---- ---- ---- ----
+
+  #  [構]id属性
+  .  [構]class属性
+  :  [構]型明示
+  \  [構]制御綴開始，エスケープ
+  @  [構]トークン列型変数のトークン列化
+  ,  [構]引数区切り
+  ;  [構]引数終了
+  %  [構]コメントアウト
+  $  [構]文中数式
+  +  [計]加算，[計]正
+  -  [構]アルファベットの一部，[計]減算，[計]負，[数]減算記号
+  *  [計]乗算
+  /  [計]除算
+  `
+  '
+  "
+  &
+  =
+  ~
+  ^
+  <
+  >
+  !
+  ?
+  _  [数]添字
+  []  オプション
+  {}  グループ
+  ()  函数適用，演算順序
+  
